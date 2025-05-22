@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>咖啡豆價格查詢</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Pacifico', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: url('https://images.unsplash.com/photo-1507915135761-5bb418c3ec8d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #6F4E37; /* 深咖啡棕作為備用背景 */
+            color: #2F4F4F; /* 深綠色文字 */
+        }
+        h1 {
+            color: #592c06; /* 奶油色標題 */
+            text-align: center;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .search-section {
+            background-color: #F5E8C7; /* 淡咖啡色 */
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border: 2px solid #6F4E37; /* 深咖啡棕邊框 */
+        }
+        label {
+            margin-right: 10px;
+            font-weight: bold;
+            color: #2F4F4F;
+        }
+        input, button, select {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #6F4E37;
+            border-radius: 5px;
+            font-size: 1em;
+            background-color: #FFF;
+            transition: all 0.3s ease;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #D7B9A0;
+            box-shadow: 0 0 5px #D7B9A0;
+        }
+        button {
+            background-color: #6F4E37;
+            color: #D7B9A0;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+        button:hover {
+            background-color: #5A3E2B;
+            color: #FFF;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #F5E8C7;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #6F4E37;
+        }
+        th {
+            background-color: #6F4E37;
+            color: #D7B9A0;
+            font-size: 1.1em;
+        }
+        tr:hover {
+            background-color: #E8D4B5; /* 淡咖啡hover效果 */
+        }
+        /* 確保表格第一行和最後一行圓角 */
+        tr:first-child th:first-child {
+            border-top-left-radius: 5px;
+        }
+        tr:first-child th:last-child {
+            border-top-right-radius: 5px;
+        }
+        tr:last-child td:first-child {
+            border-bottom-left-radius: 5px;
+        }
+        tr:last-child td:last-child {
+            border-bottom-right-radius: 5px;
+        }
+        /* 為 USD 添加較小字體 */
+        .usd {
+            font-size: 0.08em;
+            color: #2F4F4F;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>咖啡豆價格查詢系統</h1>
+
+    <!-- 搜尋區域 -->
+    <div class="search-section">
+        <h2>查詢數據</h2>
+        <label>日期:</label>
+        <select id="dateInput">
+            <option value="">-- 所有日期 --</option>
+        </select>
+        <label>商品名稱:</label>
+        <select id="productInput">
+            <option value="">-- 全部商品 --</option>
+        </select>
+        <label>價格:</label>
+        <input type="number" id="priceInput" step="0.01" placeholder="輸入價格...">
+        <button onclick="searchData()">搜尋</button>
+    </div>
+
+    <!-- 顯示表格 -->
+    <div id="resultTable"></div>
+</div>
+
+<script>
+    // 動態填充日期選項
+    async function loadDates() {
+        try {
+            const response = await fetch('http://localhost:3000/api/dates');
+            if (!response.ok) {
+                throw new Error('無法獲取日期: ' + response.status);
+            }
+            const dates = await response.json();
+            const dateSelect = document.getElementById('dateInput');
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                option.textContent = date;
+                dateSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('載入日期失敗:', error);
+            alert('無法載入日期選項，請檢查後端服務');
+        }
+    }
+
+    // 動態填充商品名稱選項
+    async function loadProducts() {
+        try {
+            const response = await fetch('http://localhost:3000/api/products');
+            if (!response.ok) {
+                throw new Error('無法獲取商品名稱: ' + response.status);
+            }
+            const products = await response.json();
+            const productSelect = document.getElementById('productInput');
+            products.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product;
+                option.textContent = product;
+                productSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('載入商品名稱失敗:', error);
+            alert('無法載入商品名稱選項，請檢查後端服務');
+        }
+    }
+
+    // 搜尋數據
+    async function searchData() {
+        const date = document.getElementById('dateInput').value;
+        const product = document.getElementById('productInput').value;
+        const price = document.getElementById('priceInput').value;
+
+        const params = new URLSearchParams();
+        if (date) params.append('date', date);
+        if (product) params.append('product', product);
+        if (price) params.append('price', price);
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/quotes?${params.toString()}`);
+            if (!response.ok) {
+                throw new Error('後端服務返回錯誤: ' + response.status);
+            }
+            const data = await response.json();
+            displayTable(data);
+        } catch (error) {
+            console.error('搜尋數據失敗:', error);
+            alert('無法獲取數據，請檢查後端服務');
+        }
+    }
+
+    // 顯示表格
+    function displayTable(data) {
+        const tableDiv = document.getElementById('resultTable');
+        let html = '<table><tr><th>日期</th><th>商品名稱</th><th>價格</th></tr>';
+
+        if (data.length === 0) {
+            html += '<tr><td colspan="3">無符合條件的數據</td></tr>';
+        } else {
+            data.forEach(item => {
+                html += `<tr><td>${item.date}</td><td>${item.product}</td><td>${item.price}<span class="usd"> USD</span></td></tr>`;
+            });
+        }
+
+        html += '</table>';
+        tableDiv.innerHTML = html;
+    }
+
+    // 頁面加載時初始化
+    window.onload = () => {
+        loadDates();
+        loadProducts();
+        searchData();
+    };
+</script>
+</body>
+</html>

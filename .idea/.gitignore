@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# 環境變數
+.env
+
+# 資料庫
+*.db
+
+# log 檔案
+*.log
+
+# 系統垃圾
+.DS_Store
+Thumbs.db
+
+# WebStorm 專案設定
+.idea/
+*.iml
+
+# 編譯 / 打包目錄（如果有）
+dist/
+build/
+
+# HTTP 請求測試
+/httpRequests/
+
+# IDE 資料
+/shelf/
+/workspace.xml
+/dataSources/
+/dataSources.local.xml
